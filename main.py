@@ -10,6 +10,7 @@ import auth_utils
 import database
 import models
 from routers import auth, barter, feedback, products, search, seller
+from product_options import PRODUCT_CATEGORIES
 
 
 models.Base.metadata.create_all(bind=database.engine)
