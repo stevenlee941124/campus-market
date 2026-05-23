@@ -11,10 +11,7 @@ from sqlalchemy.orm import Session
 import auth_utils
 import database
 import models
-<<<<<<< HEAD
-=======
 from product_options import PRODUCT_CATEGORIES
->>>>>>> 746fcc7 (update)
 
 
 router = APIRouter(prefix="/products", tags=["products"])
@@ -58,10 +55,6 @@ def get_products(request: Request, category: str = None, db: Session = Depends(d
             "products": products,
             "current_category": category or "全部商品",
             "user": user,
-<<<<<<< HEAD
-=======
-            "categories": PRODUCT_CATEGORIES,
->>>>>>> 746fcc7 (update)
         },
     )
 
@@ -125,10 +118,6 @@ def edit_product_page(request: Request, product_id: int, db: Session = Depends(d
     )
 
 
-<<<<<<< HEAD
-
-=======
->>>>>>> 746fcc7 (update)
 @router.post("/{product_id}/edit")
 async def update_product(
     request: Request,
