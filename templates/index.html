@@ -16,7 +16,7 @@
             margin-bottom: 30px;
         }
         .search-container {
-            max-width: 800px;
+            max-width: 980px;
             margin: -30px auto 30px;
             background: white;
             padding: 20px;
@@ -80,13 +80,15 @@
     <div class="container">
         <div class="search-container">
             <form action="/search/" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
-                <input type="text" name="q" placeholder="想找什麼？輸入關鍵字..." style="flex: 2; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
-                <select name="cat" style="width: 120px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="text" name="q" placeholder="想找什麼？輸入關鍵字..." style="flex: 2 1 240px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                <select name="cat" style="flex: 1 1 140px; min-width: 140px; border: 1px solid #ddd; border-radius: 6px;">
                     <option value="">所有分類</option>
-                    <option value="課本">課本</option>
-                    <option value="電子產品">電子產品</option>
-                    <option value="宿舍用品">宿舍用品</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
                 </select>
+                <input type="number" name="min_p" min="0" placeholder="最低價" style="flex: 1 1 110px; min-width: 110px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
+                <input type="number" name="max_p" min="0" placeholder="最高價" style="flex: 1 1 110px; min-width: 110px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
                 <button type="submit" style="padding: 10px 25px; background: #2e7d32;">搜尋</button>
             </form>
         </div>

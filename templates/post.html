@@ -36,11 +36,9 @@
             <div class="form-group">
                 <label>類別：</label>
                 <select name="category">
-                    <option value="課本">課本</option>
-                    <option value="電子產品">電子產品</option>
-                    <option value="宿舍用品">宿舍用品</option>
-                    <option value="服飾">服飾</option>
-                    <option value="其他">其他</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
                 </select>
             </div>
             <div class="form-group">

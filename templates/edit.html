@@ -38,11 +38,9 @@
                 <div class="form-group">
                     <label>商品分類：</label>
                     <select name="category">
-                        <option value="課本" {% if product.category == '課本' %}selected{% endif %}>課本</option>
-                        <option value="電子產品" {% if product.category == '電子產品' %}selected{% endif %}>電子產品</option>
-                        <option value="宿舍用品" {% if product.category == '宿舍用品' %}selected{% endif %}>宿舍用品</option>
-                        <option value="服飾" {% if product.category == '服飾' %}selected{% endif %}>服飾</option>
-                        <option value="其他" {% if product.category == '其他' %}selected{% endif %}>其他</option>
+                        {% for category in categories %}
+                        <option value="{{ category }}" {% if product.category == category %}selected{% endif %}>{{ category }}</option>
+                        {% endfor %}
                     </select>
                 </div>
 

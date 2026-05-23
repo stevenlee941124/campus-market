@@ -33,11 +33,9 @@
         
         <div class="category-nav">
             <a href="/products/"><button>全部</button></a>
-            <a href="/products/?category=課本"><button>課本</button></a>
-            <a href="/products/?category=電子產品"><button>電子產品</button></a>
-            <a href="/products/?category=宿舍用品"><button>宿舍用品</button></a>
-            <a href="/products/?category=服飾"><button>服飾</button></a>
-            <a href="/products/?category=其他"><button>其他</button></a>
+            {% for category in categories %}
+            <a href="/products/?category={{ category | urlencode }}"><button>{{ category }}</button></a>
+            {% endfor %}
         </div>
 
         <div class="product-grid">
