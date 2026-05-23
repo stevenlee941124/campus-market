@@ -30,25 +30,12 @@ def register(
     new_user = models.User(username=username, password_hash=hashed_password)
     db.add(new_user)
     db.commit()
-<<<<<<< HEAD
 
     return templates.TemplateResponse(
         "login.html",
         {"request": request, "success": "註冊成功，現在可以登入。"},
     )
 
-=======
-    db.refresh(new_user)
-
-    access_token = auth_utils.create_access_token(
-        data={"sub": new_user.username, "user_id": new_user.id}
-    )
-
-    res = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
-    res.set_cookie(key="access_token", value=f"Bearer {access_token}", httponly=True)
-    return res
-
->>>>>>> 746fcc7 (update)
 
 @router.post("/login")
 def login(
