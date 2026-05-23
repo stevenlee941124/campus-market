@@ -55,6 +55,7 @@ def get_products(request: Request, category: str = None, db: Session = Depends(d
             "products": products,
             "current_category": category or "全部商品",
             "user": user,
+            "categories": PRODUCT_CATEGORIES,
         },
     )
 
