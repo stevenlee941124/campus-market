@@ -81,7 +81,7 @@
         <div class="search-container">
             <form action="/search/" method="GET" style="display: flex; gap: 10px; flex-wrap: wrap;">
                 <input type="text" name="q" placeholder="想找什麼？輸入關鍵字..." style="flex: 2 1 240px; padding: 12px; border: 1px solid #ddd; border-radius: 6px;">
-                <select name="cat" style="flex: 1 1 140px; min-width: 140px; border: 1px solid #ddd; border-radius: 6px;">
+                <select name="cat" onchange="this.form.submit()" style="flex: 1 1 140px; min-width: 140px; border: 1px solid #ddd; border-radius: 6px;">
                     <option value="">所有分類</option>
                     {% for category in categories %}
                     <option value="{{ category }}">{{ category }}</option>
