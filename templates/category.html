@@ -2,70 +2,100 @@
 <html lang="zh-TW">
 <head>
     <meta charset="UTF-8">
-    <title>所有商品 - 興大二手交易平台</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ current_category }} - 興大二手交易</title>
     <link rel="stylesheet" href="/static/style.css">
-    <style>
-        .category-nav { margin-bottom: 20px; display: flex; gap: 10px; flex-wrap: wrap; }
-        .tag-badge { background: #e1f5fe; color: #0288d1; padding: 2px 8px; border-radius: 12px; font-size: 0.8em; margin-right: 5px; }
-    </style>
 </head>
 <body>
-    <header>
-        <h2>興大二手交易</h2>
-        <nav style="display: flex; align-items: center; gap: 20px;">
+    <header class="site-header">
+        <a class="brand" href="/">
+            <span class="brand-mark">市</span>
+            <span>興大二手交易</span>
+        </a>
+        <nav class="main-nav" aria-label="主要導覽">
             <a href="/">首頁</a>
             <a href="/products/">所有商品</a>
             <a href="/post">刊登商品</a>
-            <div class="user-nav" style="display: flex; align-items: center; gap: 15px; margin-left: auto;">
-                {% if user %}
-                    <span style="color: white;">👋 你好，{{ user.sub }}</span>
-                    <a href="/seller/dashboard" style="background: #f39c12; color: white; padding: 5px 10px; border-radius: 4px; text-decoration: none;">賣家專區</a>
-                    <a href="/auth/logout" style="color: #ffcccc; font-size: 0.9em;">登出</a>
-                {% else %}
-                    <a href="/login" style="color: white; text-decoration: underline;">登入/註冊</a>
-                {% endif %}
-            </div>
+            <a href="/help">使用說明</a>
+            <a href="/barter/" class="nav-pill barter">換換模式</a>
         </nav>
+        <div class="user-nav">
+            {% if user %}
+                <span class="status-pill">你好，{{ user.sub }}</span>
+                <a href="/seller/dashboard">賣家專區</a>
+                <a href="/auth/logout">登出</a>
+            {% else %}
+                <a href="/login" class="nav-pill primary">登入/註冊</a>
+            {% endif %}
+        </div>
     </header>
 
-    <div class="container">
-        <h2>📂 分類瀏覽：{{ current_category }}</h2>
-        
-        <div class="category-nav">
-            <a href="/products/"><button>全部</button></a>
-            {% for category in categories %}
-            <a href="/products/?category={{ category | urlencode }}"><button>{{ category }}</button></a>
-            {% endfor %}
-        </div>
+    <main class="container">
+        <section class="category-toolbar">
+            <div class="section-heading" style="margin-top: 0;">
+                <h2>{{ current_category }}</h2>
+                <a class="button secondary" href="/">回首頁</a>
+            </div>
+            <form class="search-form" action="/search/" method="GET">
+                <input type="text" name="q" placeholder="在商品中搜尋">
+                <select name="cat" onchange="this.form.submit()">
+                    <option value="">所有分類</option>
+                    {% for category in categories %}
+                    <option value="{{ category }}">{{ category }}</option>
+                    {% endfor %}
+                </select>
+                <input type="number" name="min_p" min="0" placeholder="最低價">
+                <input type="number" name="max_p" min="0" placeholder="最高價">
+                <button type="submit">搜尋</button>
+            </form>
+            <div class="chip-row">
+                <a class="chip" href="/products/">全部</a>
+                {% for category in categories %}
+                <a class="chip" href="/products/?category={{ category | urlencode }}">{{ category }}</a>
+                {% endfor %}
+            </div>
+        </section>
 
         <div class="product-grid">
             {% for product in products %}
-            <div class="product-card">
-                <div style="height: 180px; background: #eee; border-radius: 4px; overflow: hidden;">
+            <article class="product-card" data-product-card data-product-id="{{ product.id }}" data-product-name="{{ product.name }}" data-product-price="{{ product.price | int }}" data-product-tags="{{ product.tags or '' }}">
+                <div class="product-image">
                     {% if product.image %}
-                        <img src="{{ product.image }}" alt="{{ product.name }}" style="width: 100%; height: 100%; object-fit: cover;">
+                        <img src="{{ product.image }}" alt="{{ product.name }}">
                     {% else %}
-                        <div style="display: flex; align-items: center; justify-content: center; height: 100%; color: #999;">無圖片</div>
+                        <div class="no-image">無圖片</div>
                     {% endif %}
                 </div>
-
-                <h3>{{ product.name }}</h3>
-                <p class="price">${{ product.price | int }}</p>
-                
-                <div style="min-height: 30px; margin-bottom: 5px;">
-                    {% if product.tags %}
-                        {% for tag in product.tags.split(',') %}
-                            <span class="tag-badge">#{{ tag.strip() }}</span>
-                        {% endfor %}
-                    {% endif %}
+                <div class="product-body">
+                    <h3>{{ product.name }}</h3>
+                    <p class="price">NT$ {{ product.price | int }}</p>
+                    <div class="tag-list">
+                        {% if product.tags %}
+                            {% for tag in product.tags.split(',') %}
+                                <span class="tag-badge">#{{ tag.strip() }}</span>
+                            {% endfor %}
+                        {% else %}
+                            <span class="tag-badge">#校園面交</span>
+                        {% endif %}
+                    </div>
+                    <div class="card-actions">
+                        <a class="button secondary" href="/products/{{ product.id }}">查看詳情</a>
+                        <button class="tiny-button" type="button" data-save-item aria-label="收藏 {{ product.name }}">☆</button>
+                        <button class="tiny-button" type="button" data-add-cart aria-label="加入購物車 {{ product.name }}">＋</button>
+                    </div>
                 </div>
-
-                <a href="/products/{{ product.id }}"><button style="width: 100%; margin-top: 10px;">查看詳情</button></a>
-            </div>
+            </article>
             {% else %}
-            <p style="grid-column: 1/-1; text-align: center; padding: 50px;">目前沒有此分類的商品。</p>
+            <div class="empty-state">找不到符合條件的商品，換個分類或關鍵字試試。</div>
             {% endfor %}
         </div>
-    </div>
+    </main>
+
+    <div class="toast" data-toast hidden></div>
+    <footer>
+        <p>國立中興大學 - 校園二手交易平台測試版</p>
+        <p>聯絡我們：<a href="mailto:a0985054276@gmail.com">a0985054276@gmail.com</a></p>
+    </footer>
+    <script src="/static/market-ui.js"></script>
 </body>
 </html>

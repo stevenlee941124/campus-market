@@ -85,3 +85,9 @@ def post_page(request: Request):
 def contact_page(request: Request):
     user = get_user_from_cookie(request)
     return templates.TemplateResponse("contact.html", {"request": request, "user": user})
+
+
+@app.get("/help")
+def help_page(request: Request):
+    user = get_user_from_cookie(request)
+    return templates.TemplateResponse("help.html", {"request": request, "user": user})
