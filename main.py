@@ -9,8 +9,42 @@ from sqlalchemy.orm import Session
 import auth_utils
 import database
 import models
+
+# ----------------- MONKEY PATCH JINJA2TEMPLATES GLOBALS -----------------
+def get_user_avatar(user_id: int):
+    if not user_id:
+        return None
+    db = database.SessionLocal()
+    try:
+        u = db.query(models.User).filter(models.User.id == user_id).first()
+        return u.avatar if u else None
+    finally:
+        db.close()
+
+def get_user_nickname(user_id: int):
+    if not user_id:
+        return None
+    db = database.SessionLocal()
+    try:
+        u = db.query(models.User).filter(models.User.id == user_id).first()
+        if u:
+            return u.nickname or u.username
+        return None
+    finally:
+        db.close()
+
+original_init = Jinja2Templates.__init__
+def patched_init(self, *args, **kwargs):
+    original_init(self, *args, **kwargs)
+    self.env.globals.update(
+        get_user_avatar=get_user_avatar,
+        get_user_nickname=get_user_nickname
+    )
+Jinja2Templates.__init__ = patched_init
+# -----------------------------------------------------------------------
+
 from product_options import PRODUCT_CATEGORIES
-from routers import auth, barter, feedback, products, search, seller
+from routers import auth, barter, feedback, products, search, seller, chat, settings
 
 
 models.Base.metadata.create_all(bind=database.engine)
@@ -26,6 +60,44 @@ def ensure_barter_schema():
 
 ensure_barter_schema()
 
+
+def ensure_user_profile_schema():
+    inspector = inspect(database.engine)
+    columns = [column["name"] for column in inspector.get_columns("users")]
+    with database.engine.begin() as conn:
+        if "nickname" not in columns:
+            conn.execute(text("ALTER TABLE users ADD COLUMN nickname VARCHAR"))
+        if "avatar" not in columns:
+            conn.execute(text("ALTER TABLE users ADD COLUMN avatar VARCHAR"))
+        if "bio" not in columns:
+            conn.execute(text("ALTER TABLE users ADD COLUMN bio TEXT"))
+
+
+ensure_user_profile_schema()
+
+
+def ensure_chat_room_status_schema():
+    inspector = inspect(database.engine)
+    columns = [column["name"] for column in inspector.get_columns("chat_rooms")]
+    with database.engine.begin() as conn:
+        if "buyer_archived" not in columns:
+            conn.execute(text("ALTER TABLE chat_rooms ADD COLUMN buyer_archived BOOLEAN DEFAULT 0"))
+        if "seller_archived" not in columns:
+            conn.execute(text("ALTER TABLE chat_rooms ADD COLUMN seller_archived BOOLEAN DEFAULT 0"))
+        if "buyer_deleted" not in columns:
+            conn.execute(text("ALTER TABLE chat_rooms ADD COLUMN buyer_deleted BOOLEAN DEFAULT 0"))
+        if "seller_deleted" not in columns:
+            conn.execute(text("ALTER TABLE chat_rooms ADD COLUMN seller_deleted BOOLEAN DEFAULT 0"))
+        if "is_blocked" not in columns:
+            conn.execute(text("ALTER TABLE chat_rooms ADD COLUMN is_blocked BOOLEAN DEFAULT 0"))
+        
+        # Migrate data from is_archived to buyer_archived and seller_archived if is_archived exists
+        if "is_archived" in columns:
+            conn.execute(text("UPDATE chat_rooms SET buyer_archived = is_archived, seller_archived = is_archived"))
+
+
+ensure_chat_room_status_schema()
+
 app = FastAPI(title="興大校園二手市集")
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -37,6 +109,8 @@ app.include_router(feedback.router)
 app.include_router(seller.router)
 app.include_router(auth.router)
 app.include_router(barter.router)
+app.include_router(chat.router)
+app.include_router(settings.router)
 
 
 def get_user_from_cookie(request: Request):

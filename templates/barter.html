@@ -100,6 +100,106 @@
             color: #2c3e50;
         }
 
+        /* ── 篩選條件面板 ── */
+        .filter-panel {
+            margin-bottom: 18px;
+            padding: 14px 16px;
+            border: 1px solid #e0d9f7;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #f8f6ff 0%, #f0f4ff 100%);
+        }
+
+        .filter-panel h4 {
+            margin: 0 0 12px;
+            font-size: 0.9rem;
+            color: #6c5ce7;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-form {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .filter-form select,
+        .filter-form input[type="text"] {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 8px 10px;
+            border: 1px solid #c9bef5;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            background: white;
+            color: #2c3e50;
+            outline: none;
+            transition: border-color 0.15s;
+        }
+
+        .filter-form select:focus,
+        .filter-form input[type="text"]:focus {
+            border-color: #6c5ce7;
+            box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.12);
+        }
+
+        .filter-btn-row {
+            display: flex;
+            gap: 8px;
+        }
+
+        .filter-submit {
+            flex: 1;
+            padding: 8px 0;
+            background: #6c5ce7;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .filter-submit:hover {
+            background: #5a4ad1;
+        }
+
+        .filter-submit:active {
+            transform: scale(0.97);
+        }
+
+        .filter-reset {
+            padding: 8px 14px;
+            background: white;
+            color: #6c5ce7;
+            border: 1px solid #c9bef5;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            transition: background 0.15s;
+        }
+
+        .filter-reset:hover {
+            background: #f0ecff;
+        }
+
+        .filter-badge {
+            display: inline-block;
+            margin-left: 6px;
+            padding: 1px 7px;
+            background: #6c5ce7;
+            color: white;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
         .swipe-stage {
             min-height: 75vh;
             display: flex;
@@ -167,6 +267,18 @@
         .card-info p {
             margin: 7px 0;
             color: #687782;
+        }
+
+        /* 分類標籤 */
+        .card-category-badge {
+            display: inline-block;
+            margin-top: 6px;
+            padding: 3px 10px;
+            background: #f0ecff;
+            color: #6c5ce7;
+            border-radius: 20px;
+            font-size: 0.78rem;
+            font-weight: 700;
         }
 
         .stamp {
@@ -275,13 +387,11 @@
         <nav style="display: flex; align-items: center; gap: 25px;">
             <a href="/">首頁</a>
             <a href="/products/">全部商品</a>
+            <a href="/chat">我的訊息</a>
             <a href="/barter/matches">我的配對</a>
-        
-            <div class="user-nav" style="display: flex; align-items: center; gap: 15px;">
-                <span style="font-weight: bold;">
-                    👤 帳號：{{ user.sub }}
-                </span>
-            </div>
+            <a href="/settings" class="avatar-pill" title="個人設定" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border: 2px solid var(--line) !important; border-radius: 50% !important; overflow: hidden !important; box-shadow: 2px 2px 0 var(--line) !important; background: #fff !important; flex-shrink: 0 !important; transition: transform 0.16s ease, box-shadow 0.16s ease;">
+                <img src="{{ get_user_avatar(user.user_id) or '/static/assets/icon-profile.png' }}" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;" alt="⚙️">
+            </a>
         </nav>
     </header>
 
@@ -300,7 +410,7 @@
                 <div class="offer-list">
                     {% for item in my_products %}
                     <a class="offer-item {% if selected_product and selected_product.id == item.id %}active{% endif %}"
-                       href="/barter/?offering_id={{ item.id }}">
+                       href="/barter/?offering_id={{ item.id }}{% if want_category %}&want_category={{ want_category }}{% endif %}{% if keyword %}&keyword={{ keyword }}{% endif %}">
                         <img src="{{ item.image or '/static/default_item.png' }}" alt="{{ item.name }}">
                         <div>
                             <div class="offer-title">{{ item.name }}</div>
@@ -309,6 +419,35 @@
                     </a>
                     {% endfor %}
                 </div>
+
+                {% if selected_product %}
+                <!-- 篩選條件面板：選好自己的物品後才顯示 -->
+                <div class="filter-panel" style="margin-top: 20px;">
+                    <h4>
+                        🔍 我想要的條件
+                        {% if filters_active %}<span class="filter-badge">已套用</span>{% endif %}
+                    </h4>
+                    <form class="filter-form" method="GET" action="/barter/">
+                        <input type="hidden" name="offering_id" value="{{ selected_product.id }}">
+                        <select name="want_category" id="want_category">
+                            <option value="">── 所有分類 ──</option>
+                            {% for cat in categories %}
+                            <option value="{{ cat }}" {% if want_category == cat %}selected{% endif %}>{{ cat }}</option>
+                            {% endfor %}
+                        </select>
+                        <input type="text" name="keyword" id="barter_keyword"
+                               placeholder="關鍵字（例如：微積分）"
+                               value="{{ keyword }}">
+                        <div class="filter-btn-row">
+                            <button type="submit" class="filter-submit">套用篩選</button>
+                            {% if filters_active %}
+                            <a class="filter-reset" href="/barter/?offering_id={{ selected_product.id }}">清除</a>
+                            {% endif %}
+                        </div>
+                    </form>
+                </div>
+                {% endif %}
+
                 {% else %}
                 <div class="empty-state" style="min-height: 220px; padding: 16px;">
                     <h3>你還沒有可交換的物品</h3>
@@ -344,6 +483,9 @@
 
                         <div class="card-info">
                             <h3>{{ p.name }}</h3>
+                            {% if p.category %}
+                            <span class="card-category-badge">{{ p.category }}</span>
+                            {% endif %}
                             <p>{{ p.location or '未填地點' }}</p>
                             <p>{{ p.description | truncate(50, True, '...') if p.description else '賣家沒有填寫描述。' }}</p>
                         </div>

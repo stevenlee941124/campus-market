@@ -9,6 +9,7 @@ from typing import Optional
 import auth_utils
 import database
 import models
+import product_options
 
 
 router = APIRouter(prefix="/barter", tags=["barter"])
@@ -33,6 +34,8 @@ def get_current_user(request: Request):
 def barter_page(
     request: Request,
     offering_id: Optional[int] = None,
+    want_category: Optional[str] = None,
+    keyword: Optional[str] = None,
     db: Session = Depends(database.get_db),
 ):
     user = get_current_user(request)
@@ -52,6 +55,9 @@ def barter_page(
 
     selected_product = None
     available_products = []
+    # 過濾條件是否已套用
+    filters_active = bool(want_category or keyword)
+
     if offering_id is not None:
         selected_product = (
             db.query(models.Product)
@@ -74,13 +80,27 @@ def barter_page(
         )
         swiped_ids = [item[0] for item in swiped_ids]
 
-        available_products = (
+        q = (
             db.query(models.Product)
             .filter(
                 models.Product.owner_id != user_id,
                 ~models.Product.id.in_(swiped_ids),
             )
-            .order_by(func.random())
+        )
+
+        # 依分類篩選
+        if want_category and want_category in product_options.PRODUCT_CATEGORIES:
+            q = q.filter(models.Product.category == want_category)
+
+        # 依關鍵字篩選（名稱或描述）
+        if keyword:
+            kw = f"%{keyword.strip()}%"
+            q = q.filter(
+                models.Product.name.ilike(kw) | models.Product.description.ilike(kw)
+            )
+
+        available_products = (
+            q.order_by(func.random())
             .limit(10)
             .all()
         )
@@ -93,6 +113,10 @@ def barter_page(
             "my_products": my_products,
             "selected_product": selected_product,
             "user": user,
+            "categories": product_options.PRODUCT_CATEGORIES,
+            "want_category": want_category or "",
+            "keyword": keyword or "",
+            "filters_active": filters_active,
         },
     )
 

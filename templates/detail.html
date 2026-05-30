@@ -70,6 +70,7 @@
             margin-top: 25px;
             border: none;
             cursor: pointer;
+            box-sizing: border-box;
         }
         .contact-btn:hover {
             opacity: 0.9;
@@ -89,23 +90,35 @@
     </style>
 </head>
 <body>
-    <header>
-        <h2>興大二手交易</h2>
-        <nav style="display: flex; align-items: center; gap: 20px;">
+    <header class="site-header">
+        <a class="brand" href="/">
+            <span class="brand-mark">市</span>
+            <span>興大二手交易</span>
+        </a>
+
+        <nav class="main-nav" aria-label="主要導覽">
             <a href="/">首頁</a>
             <a href="/products/">所有商品</a>
-            <div class="user-nav" style="margin-left: auto; display: flex; align-items: center; gap: 15px;">
-                {% if user %}
-                    <span style="color: white; font-size: 0.9em;">👋 你好，{{ user.sub }}</span>
-                    <a href="/seller/dashboard" style="color: #f39c12; font-weight: bold;">賣家專區</a>
-                {% else %}
-                    <a href="/login" style="color: white; text-decoration: underline;">登入/註冊</a>
-                {% endif %}
-            </div>
+            <a href="/post">刊登商品</a>
+            <a href="/barter/" class="nav-pill barter">換換模式</a>
         </nav>
+
+        <div class="user-nav">
+            {% if user %}
+                <a href="/chat">我的訊息</a>
+                <a href="/barter/matches">我的配對</a>
+                <a href="/seller/dashboard">賣家專區</a>
+                <a href="/auth/logout">登出</a>
+                <a href="/settings" class="avatar-pill" title="個人設定" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border: 2px solid var(--line) !important; border-radius: 50% !important; overflow: hidden !important; box-shadow: 2px 2px 0 var(--line) !important; background: #fff !important; flex-shrink: 0 !important; transition: transform 0.16s ease, box-shadow 0.16s ease;">
+                    <img src="{{ get_user_avatar(user.user_id) or '/static/assets/icon-profile.png' }}" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;" alt="⚙️">
+                </a>
+            {% else %}
+                <a href="/login" class="nav-pill primary">登入/註冊</a>
+            {% endif %}
+        </div>
     </header>
 
-    <div class="container">
+    <div class="container" style="max-width: 1180px; margin: 20px auto; padding: 0 16px; box-sizing: border-box;">
         <a href="javascript:history.back()" style="text-decoration: none; color: #4CAF50; font-weight: bold;">← 返回上一頁</a>
         
         {% if product %}
@@ -168,6 +181,17 @@
                         <a href="{{ contact_url }}" target="_blank" class="contact-btn {{ btn_class }}">
                             {{ btn_text }}
                         </a>
+
+                        <!-- 在線即時對話按鈕 -->
+                        {% if user and user.user_id == product.owner_id %}
+                            <button class="contact-btn" disabled style="background: #e0e0e0 !important; cursor: not-allowed !important; border: 3px solid #666 !important; color: #666 !important; box-shadow: none !important; margin-top: 10px;">
+                                💬 這是您刊登的商品
+                            </button>
+                        {% else %}
+                            <a href="/chat/rooms/start?product_id={{ product.id }}" class="contact-btn" style="background: #2ecc71 !important; color: #fff !important; border: 3px solid #27ae60 !important; box-shadow: 3px 3px 0 #27ae60 !important; margin-top: 10px;">
+                                💬 在線即時對話
+                            </a>
+                        {% endif %}
                     </div>
                 </div>
             </div>

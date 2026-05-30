@@ -12,18 +12,23 @@
             <span class="brand-mark">市</span>
             <span>興大二手交易</span>
         </a>
+
         <nav class="main-nav" aria-label="主要導覽">
             <a href="/">首頁</a>
             <a href="/products/">所有商品</a>
             <a href="/post">刊登商品</a>
-            <a href="/help">使用說明</a>
             <a href="/barter/" class="nav-pill barter">換換模式</a>
         </nav>
+
         <div class="user-nav">
             {% if user %}
-                <span class="status-pill">你好，{{ user.sub }}</span>
+                <a href="/chat">我的訊息</a>
+                <a href="/barter/matches">我的配對</a>
                 <a href="/seller/dashboard">賣家專區</a>
                 <a href="/auth/logout">登出</a>
+                <a href="/settings" class="avatar-pill" title="個人設定" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border: 2px solid var(--line) !important; border-radius: 50% !important; overflow: hidden !important; box-shadow: 2px 2px 0 var(--line) !important; background: #fff !important; flex-shrink: 0 !important; transition: transform 0.16s ease, box-shadow 0.16s ease;">
+                    <img src="{{ get_user_avatar(user.user_id) or '/static/assets/icon-profile.png' }}" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;" alt="⚙️">
+                </a>
             {% else %}
                 <a href="/login" class="nav-pill primary">登入/註冊</a>
             {% endif %}

@@ -156,6 +156,35 @@ body > header:not(.site-header) a {
     background: var(--sun);
 }
 
+.avatar-pill {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    width: 40px !important;
+    height: 40px !important;
+    padding: 0 !important;
+    border: 2px solid var(--line) !important;
+    border-radius: 50% !important;
+    overflow: hidden !important;
+    box-shadow: 2px 2px 0 var(--line) !important;
+    background: #fff !important;
+    flex-shrink: 0 !important;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease !important;
+}
+
+.avatar-pill:hover,
+.avatar-pill.active {
+    transform: translateY(-2px) !important;
+    box-shadow: 3px 3px 0 var(--line) !important;
+    background: var(--mint) !important;
+}
+
+.avatar-pill img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: cover !important;
+}
+
 .icon-button {
     position: relative;
     width: 44px;
@@ -454,16 +483,37 @@ textarea {
     font-size: clamp(1.45rem, 3vw, 2.1rem);
 }
 
-.category-grid {
-    display: grid;
-    grid-template-columns: repeat(6, minmax(130px, 1fr));
+/* 分類橫向滾動軌道 */
+.category-track {
+    display: flex;
+    flex-wrap: nowrap;              /* 強制橫排，不換行 */
     gap: 14px;
+    overflow-x: auto;               /* 橫向滾動 */
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    padding: 6px 4px 14px;
+    cursor: grab;
+    user-select: none;
+    scrollbar-width: none;          /* Firefox 隱藏 scrollbar */
+    -ms-overflow-style: none;       /* IE 隱藏 scrollbar */
+    margin-bottom: 4px;
+}
+
+.category-track::-webkit-scrollbar {
+    display: none;                  /* Chrome 隱藏 scrollbar */
+}
+
+.category-track.is-dragging {
+    cursor: grabbing;
+    scroll-behavior: auto;
 }
 
 .category-tile {
     display: grid;
     gap: 8px;
     justify-items: center;
+    flex: 0 0 auto;
+    width: 120px;
     padding: 14px 10px 12px;
     border: 3px solid var(--line);
     border-radius: 8px;
@@ -473,18 +523,31 @@ textarea {
     text-decoration: none;
     font-weight: 900;
     box-shadow: 3px 4px 0 var(--line);
-    transition: transform 0.16s ease, box-shadow 0.16s ease;
+    transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease;
 }
 
 .category-tile:hover {
     transform: translateY(-3px) rotate(-1deg);
     box-shadow: 6px 7px 0 var(--line);
+    background: #fffbe8;
 }
 
 .category-tile img {
-    width: 96px;
-    height: 96px;
+    width: 72px;
+    height: 72px;
     object-fit: contain;
+    pointer-events: none;
+}
+
+/* emoji 分類（沒有圖片的） */
+.cat-emoji-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 72px;
+    height: 72px;
+    font-size: 2.6rem;
+    line-height: 1;
 }
 
 .market-layout {
@@ -812,9 +875,7 @@ footer a {
         grid-template-columns: repeat(4, minmax(78px, 1fr));
     }
 
-    .category-grid {
-        grid-template-columns: repeat(3, minmax(120px, 1fr));
-    }
+    /* category-track 使用 flex 橫向滾動，不需要媒體查詢覆寫 */
 
     .market-panel {
         position: static;
@@ -843,7 +904,6 @@ footer a {
     }
 
     .quick-dock,
-    .category-grid,
     .search-form,
     .section-band,
     .help-grid {

@@ -167,10 +167,13 @@
 <body>
     <header>
         <h2>興大換換 Barter</h2>
-        <nav style="display: flex; gap: 20px;">
+        <nav style="display: flex; gap: 20px; align-items: center;">
             <a href="/">首頁</a>
+            <a href="/chat">我的訊息</a>
             <a href="/barter/">繼續滑卡</a>
-            <span style="margin-left: auto;">{{ user.sub }}</span>
+            <a href="/settings" class="avatar-pill" title="個人設定" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border: 2px solid var(--line) !important; border-radius: 50% !important; overflow: hidden !important; box-shadow: 2px 2px 0 var(--line) !important; background: #fff !important; flex-shrink: 0 !important; margin-left: auto; transition: transform 0.16s ease, box-shadow 0.16s ease;">
+                <img src="{{ get_user_avatar(user.user_id) or '/static/assets/icon-profile.png' }}" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;" alt="⚙️">
+            </a>
         </nav>
     </header>
 

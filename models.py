@@ -10,6 +10,9 @@ class User(Base):
     id = Column(Integer, primary_key=True, index=True)
     username = Column(String, unique=True, index=True)
     password_hash = Column(String)
+    nickname = Column(String, nullable=True)
+    avatar = Column(String, nullable=True)
+    bio = Column(Text, nullable=True)
 
     products = relationship("Product", back_populates="owner")
 
@@ -66,3 +69,36 @@ class BarterSwipe(Base):
     user = relationship("User")
     product = relationship("Product", foreign_keys=[target_product_id])
     offered_product = relationship("Product", foreign_keys=[offered_product_id])
+
+
+class ChatRoom(Base):
+    __tablename__ = "chat_rooms"
+
+    id = Column(Integer, primary_key=True, index=True)
+    product_id = Column(Integer, ForeignKey("products.id"))
+    buyer_id = Column(Integer, ForeignKey("users.id"))
+    seller_id = Column(Integer, ForeignKey("users.id"))
+    created_at = Column(DateTime, default=datetime.now)
+    buyer_archived = Column(Boolean, default=False)
+    seller_archived = Column(Boolean, default=False)
+    buyer_deleted = Column(Boolean, default=False)
+    seller_deleted = Column(Boolean, default=False)
+    is_blocked = Column(Boolean, default=False)
+
+    product = relationship("Product")
+    buyer = relationship("User", foreign_keys=[buyer_id])
+    seller = relationship("User", foreign_keys=[seller_id])
+
+
+class ChatMessage(Base):
+    __tablename__ = "chat_messages"
+
+    id = Column(Integer, primary_key=True, index=True)
+    room_id = Column(Integer, ForeignKey("chat_rooms.id"))
+    sender_id = Column(Integer, ForeignKey("users.id"))
+    message = Column(Text)
+    is_read = Column(Boolean, default=False)
+    created_at = Column(DateTime, default=datetime.now)
+
+    room = relationship("ChatRoom")
+    sender = relationship("User")

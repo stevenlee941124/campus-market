@@ -4,7 +4,68 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>興大二手交易 - 校園市集</title>
-    <link rel="stylesheet" href="/static/style.css">
+    <link rel="stylesheet" href="/static/style.css?v=2">
+    <style>
+        /* 強制分類橫向滾動 - 覆蓋任何可能的衝突 */
+        #categoryTrack {
+            display: flex !important;
+            flex-direction: row !important;
+            flex-wrap: nowrap !important;
+            overflow-x: auto !important;
+            overflow-y: visible !important;
+            gap: 14px !important;
+            padding: 6px 4px 16px !important;
+            cursor: grab !important;
+            user-select: none !important;
+            -webkit-overflow-scrolling: touch !important;
+            scrollbar-width: none !important;
+            -ms-overflow-style: none !important;
+            width: 100% !important;
+            scroll-behavior: auto !important;
+        }
+        #categoryTrack::-webkit-scrollbar { display: none !important; }
+        #categoryTrack.is-dragging { cursor: grabbing !important; scroll-behavior: auto !important; }
+        #categoryTrack .category-tile {
+            flex: 0 0 170px !important;
+            width: 170px !important;
+            min-width: 170px !important;
+            display: flex !important;
+            flex-direction: column !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 12px !important;
+            padding: 22px 14px 18px !important;
+            border: 3px solid #242424 !important;
+            border-radius: 12px !important;
+            background: #fff !important;
+            text-align: center !important;
+            text-decoration: none !important;
+            font-weight: 900 !important;
+            font-size: 1.15rem !important;
+            box-shadow: 4px 5px 0 #242424 !important;
+            box-sizing: border-box !important;
+            transition: transform 0.16s ease, box-shadow 0.16s ease, background 0.16s ease !important;
+        }
+        #categoryTrack .category-tile:hover {
+            transform: translateY(-4px) rotate(-1deg) !important;
+            box-shadow: 6px 7px 0 #242424 !important;
+            background: #fffbe8 !important;
+        }
+        #categoryTrack .category-tile img {
+            width: 90px !important;
+            height: 90px !important;
+            object-fit: contain !important;
+            pointer-events: none !important;
+        }
+        #categoryTrack .cat-emoji-icon {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            width: 90px !important;
+            height: 90px !important;
+            font-size: 3.2rem !important;
+        }
+    </style>
 </head>
 <body>
     <header class="site-header">
@@ -17,7 +78,6 @@
             <a href="/">首頁</a>
             <a href="/products/">所有商品</a>
             <a href="/post">刊登商品</a>
-            <a href="/help">使用說明</a>
             <a href="/barter/" class="nav-pill barter">換換模式</a>
         </nav>
 
@@ -32,10 +92,13 @@
             </button>
             <div class="user-nav">
                 {% if user %}
-                    <span class="status-pill">你好，{{ user.sub }}</span>
+                    <a href="/chat">我的訊息</a>
                     <a href="/barter/matches">我的配對</a>
                     <a href="/seller/dashboard">賣家專區</a>
                     <a href="/auth/logout">登出</a>
+                    <a href="/settings" class="avatar-pill" title="個人設定" style="display: inline-flex !important; align-items: center !important; justify-content: center !important; width: 40px !important; height: 40px !important; min-height: 40px !important; padding: 0 !important; border: 2px solid var(--line) !important; border-radius: 50% !important; overflow: hidden !important; box-shadow: 2px 2px 0 var(--line) !important; background: #fff !important; flex-shrink: 0 !important; transition: transform 0.16s ease, box-shadow 0.16s ease;">
+                        <img src="{{ get_user_avatar(user.user_id) or '/static/assets/icon-profile.png' }}" style="width: 100% !important; height: 100% !important; object-fit: cover !important; display: block !important;" alt="⚙️">
+                    </a>
                 {% else %}
                     <a href="/login" class="nav-pill primary">登入/註冊</a>
                 {% endif %}
@@ -99,13 +162,35 @@
                 <h2>用分類快速逛</h2>
                 <a class="button secondary" href="/products/">查看全部</a>
             </div>
-            <div class="category-grid">
-                <a class="category-tile" href="/products/?category=課本"><img src="/static/assets/cat-books.png" alt="">課本</a>
-                <a class="category-tile" href="/products/?category=文具"><img src="/static/assets/cat-stationery.png" alt="">文具</a>
-                <a class="category-tile" href="/products/?category=電子產品"><img src="/static/assets/cat-electronics.png" alt="">電子產品</a>
-                <a class="category-tile" href="/products/?category=宿舍用品"><img src="/static/assets/cat-dorm.png" alt="">宿舍用品</a>
-                <a class="category-tile" href="/products/?category=服飾"><img src="/static/assets/cat-clothing.png" alt="">服飾</a>
-                <a class="category-tile" href="/products/?category=運動用品"><img src="/static/assets/cat-sports.png" alt="">運動用品</a>
+            <!-- 可拖曳橫向滾動分類列 -->
+            <div class="category-track" id="categoryTrack" data-drag-scroll>
+                <a class="category-tile" href="/products/?category=課本">
+                    <img src="/static/assets/cat-books.png" alt="">課本
+                </a>
+                <a class="category-tile" href="/products/?category=文具">
+                    <img src="/static/assets/cat-stationery.png" alt="">文具
+                </a>
+                <a class="category-tile" href="/products/?category=電子產品">
+                    <img src="/static/assets/cat-electronics.png" alt="">電子產品
+                </a>
+                <a class="category-tile" href="/products/?category=宿舍用品">
+                    <img src="/static/assets/cat-dorm.png" alt="">宿舍用品
+                </a>
+                <a class="category-tile" href="/products/?category=服飾">
+                    <img src="/static/assets/cat-clothing.png" alt="">服飾
+                </a>
+                <a class="category-tile" href="/products/?category=鞋子">
+                    <img src="/static/assets/cat-shoes.png" alt="">鞋子
+                </a>
+                <a class="category-tile" href="/products/?category=運動用品">
+                    <img src="/static/assets/cat-sports.png" alt="">運動用品
+                </a>
+                <a class="category-tile cat-emoji" href="/products/?category=校園服務">
+                    <span class="cat-emoji-icon">🎓</span>校園服務
+                </a>
+                <a class="category-tile cat-emoji" href="/products/?category=其他">
+                    <span class="cat-emoji-icon">📦</span>其他
+                </a>
             </div>
         </section>
 
@@ -144,7 +229,6 @@
                         </div>
                         <div class="card-actions">
                             <a class="button secondary" href="/products/{{ product.id }}">查看詳情</a>
-                            <button class="tiny-button" type="button" data-save-item aria-label="收藏 {{ product.name }}">☆</button>
                             <button class="tiny-button" type="button" data-add-cart aria-label="加入購物車 {{ product.name }}">＋</button>
                         </div>
                     </div>
@@ -194,6 +278,6 @@
         <p>© 2026 NCHU CS Project. All rights reserved.</p>
     </footer>
 
-    <script src="/static/market-ui.js"></script>
+    <script src="/static/market-ui.js?v=8"></script>
 </body>
 </html>
